@@ -1,35 +1,72 @@
-<!DOCTYPE html><html lang="en">
-    <head>
-        <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Weather App</title>
-                    <link rel="stylesheet" href="style.css">
-                    </head>
-                    <body><div class="container">
-                        <h1>🌦️ Weather App</h1>
-
-                            <div class="search-box">
-                                    <input id="city" type="text" placeholder="Enter city name">
-                                            <button onclick="getWeather()">Search</button>
-                                                </div>
-
-                                                    <p id="message"></p>
-
-                                                        <div id="weather" hidden>
-                                                                <h2 id="cityName"></h2>
-                                                                        <img id="icon" alt="Weather icon">
-                                                                                <h1 id="temperature"></h1>
-                                                                                        <p id="condition"></p>
-
-                                                                                                <div class="details">
-                                                                                                            <p>Feels Like: <span id="feels"></span></p>
-                                                                                                                        <p>Humidity: <span id="humidity"></span></p>
-                                                                                                                                    <p>Wind Speed: <span id="wind"></span></p>
-                                                                                                                                            </div>
-                                                                                                                                                </div>
-                                                                                                                                                </div>
-
-                                                                                                                                                <script src="script.js"></script>
-
-                                                                                                                                                </body>
-                                                                                                                                                </html>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather Pro Max</title>
+<style>
+body{margin:0;font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;justify-content:center;align-items:center;transition:0.5s}
+.card{backdrop-filter:blur(15px);background:rgba(255,255,255,0.9);width:92%;max-width:380px;padding:28px;border-radius:28px;text-align:center;box-shadow:0 15px 35px rgba(0,0,0,.3)}
+select{width:65%;padding:14px;border-radius:20px;border:none;background:#f0f0f0;font-weight:bold}
+button{width:32%;padding:14px;border:none;background:black;color:white;border-radius:20px;font-weight:bold}
+#icon{font-size:70px;margin:10px 0}
+h1{font-size:60px;margin:5px 0;font-weight:900}
+.details{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.box{background:white;padding:14px;border-radius:16px;box-shadow:0 4px 10px rgba(0,0,0,.05)}
+</style>
+</head>
+<body id="bg">
+<div class="card">
+<p style="letter-spacing:2px;font-weight:bold;opacity:0.6">WEATHER PRO</p>
+<select id="cityInput" onchange="getWeather()">
+  <option value="Rajkot">📍 Rajkot</option>
+  <option value="Ahmedabad">📍 Ahmedabad</option>
+  <option value="Surat">📍 Surat</option>
+  <option value="Mumbai">📍 Mumbai</option>
+  <option value="Delhi">📍 Delhi</option>
+  <option value="Goa">🏖️ Goa</option>
+  <option value="London">🇬🇧 London</option>
+  <option value="Dubai">🇦🇪 Dubai</option>
+</select>
+<button onclick="getWeather()">GO</button>
+<div id="icon">⛅</div>
+<h1 id="temp">--°</h1>
+<h3 id="city">--</h3>
+<p id="desc">Premium Weather</p>
+<div class="details">
+<div class="box"><small>HUMIDITY</small><br><b id="hum">--</b></div>
+<div class="box"><small>WIND</small><br><b id="wind">--</b></div>
+<div class="box"><small>FEELS LIKE</small><br><b id="feels">--</b></div>
+<div class="box"><small>STATUS</small><br><b id="stat">--</b></div>
+</div>
+</div>
+<script>
+async function getWeather(){
+  let city = document.getElementById("cityInput").value;
+  try{
+    let geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1`);
+    let gData = await geo.json();
+    let lat = gData.results[0].latitude, lon=gData.results[0].longitude, name=gData.results[0].name;
+    let w = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,apparent_temperature`);
+    let wd = await w.json();
+    let temp = wd.current.temperature_2m;
+    document.getElementById("temp").innerText = temp+"°";
+    document.getElementById("city").innerText = name.toUpperCase();
+    document.getElementById("hum").innerText = wd.current.relative_humidity_2m+"%";
+    document.getElementById("wind").innerText = wd.current.wind_speed_10m+" km/h";
+    document.getElementById("feels").innerText = wd.current.apparent_temperature+"°";
+    
+    let bg = document.getElementById("bg");
+    let icon = document.getElementById("icon");
+    let stat = document.getElementById("stat");
+    if(temp>35){bg.style.background="linear-gradient(135deg,#ff7e5f,#feb47b)";icon.innerText="🔥";stat.innerText="Very Hot";}
+    else if(temp>28){bg.style.background="linear-gradient(135deg,#f7971e,#ffd200)";icon.innerText="☀️";stat.innerText="Sunny";}
+    else if(temp>20){bg.style.background="linear-gradient(135deg,#56ccf2,#2f80ed)";icon.innerText="⛅";stat.innerText="Cloudy";}
+    else{bg.style.background="linear-gradient(135deg,#4e54c8,#8f94fb)";icon.innerText="❄️";stat.innerText="Cold";}
+    document.getElementById("desc").innerText = "Live • "+new Date().toLocaleTimeString();
+  }catch(e){document.getElementById("desc").innerText="City not found";}
+}
+getWeather();
+</script>
+</body>
+</html>
